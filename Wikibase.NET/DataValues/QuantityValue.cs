@@ -113,7 +113,7 @@ namespace Wikibase.DataValues
             JsonObject obj = value.asObject();
             this.Amount = obj.get(AmountJsonName).asString();
             var unitString = obj.get(UnitJsonName).asString();
-            if ( String.IsNullOrEmpty(unitString) )
+            if ( String.IsNullOrEmpty(unitString) || unitString == "1" )
             {
                 this.Unit = null;
             }
@@ -142,9 +142,10 @@ namespace Wikibase.DataValues
         /// <returns>Encoded instance.</returns>
         internal override JsonValue Encode()
         {
+#warning Works only for Wikidata currently
             return new JsonObject()
                 .add(AmountJsonName, Amount)
-                .add(UnitJsonName, Unit == null ? String.Empty : Unit.PrefixedId)
+                .add(UnitJsonName, Unit == null ? "1" : "http://www.wikidata.org/entity/" + Unit.PrefixedId)
                 .add(UpperBoundJsonName, UpperBound)
                 .add(LowerBoundJsonName, LowerBound);
         }
