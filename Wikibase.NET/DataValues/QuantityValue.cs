@@ -1,33 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using MinimalJson;
 
 namespace Wikibase.DataValues
 {
     /// <summary>
-    /// Possible unit values for the <see cref="QuantityValue.Unit"/>.
-    /// </summary>
-    public enum QuantityUnit
-    {
-        /// <summary>
-        /// Undefined value.
-        /// </summary>
-        Unknown = 0,
-
-        /// <summary>
-        /// Number without a dimension.
-        /// </summary>
-        DimensionLess = 1,
-    }
-
-    /// <summary>
     /// Encapsulates the quantity value type.
     /// </summary>
     public class QuantityValue : DataValue
     {
-        #region Jscon names
+        #region Json names
 
         /// <summary>
         /// The identifier of this data type in the serialized json object.
@@ -54,7 +39,7 @@ namespace Wikibase.DataValues
         /// </summary>
         private const String UnitJsonName = "unit";
 
-        #endregion Jscon names
+        #endregion Json names
 
         // TODO: Better data structures, string is too general
 
@@ -72,7 +57,8 @@ namespace Wikibase.DataValues
         /// Gets or sets the unit of measurement.
         /// </summary>
         /// <value>The unit of measurement.</value>
-        public QuantityUnit Unit
+        /// <remarks><c>null</c> refers to a dimensionless quantity.</remarks>
+        public EntityId Unit
         {
             get;
             set;
@@ -111,7 +97,7 @@ namespace Wikibase.DataValues
             }
             UpperBound = Amount;
             LowerBound = Amount;
-            Unit = QuantityUnit.DimensionLess;
+            Unit = null;
         }
 
         /// <summary>
@@ -126,7 +112,17 @@ namespace Wikibase.DataValues
 
             JsonObject obj = value.asObject();
             this.Amount = obj.get(AmountJsonName).asString();
-            this.Unit = (QuantityUnit)Convert.ToInt32(obj.get(UnitJsonName).asString());
+            var unitString = obj.get(UnitJsonName).asString();
+            if ( String.IsNullOrEmpty(unitString) )
+            {
+                this.Unit = null;
+            }
+            else
+            {
+                var unitEntity = unitString.Split('/').Last();
+                this.Unit = new EntityId(unitEntity);
+            }
+
             this.UpperBound = obj.get(UpperBoundJsonName).asString();
             this.LowerBound = obj.get(LowerBoundJsonName).asString();
         }
@@ -148,7 +144,7 @@ namespace Wikibase.DataValues
         {
             return new JsonObject()
                 .add(AmountJsonName, Amount)
-                .add(UnitJsonName, Convert.ToInt32(Unit).ToString(CultureInfo.InvariantCulture))
+                .add(UnitJsonName, Unit == null ? String.Empty : Unit.PrefixedId)
                 .add(UpperBoundJsonName, UpperBound)
                 .add(LowerBoundJsonName, LowerBound);
         }
