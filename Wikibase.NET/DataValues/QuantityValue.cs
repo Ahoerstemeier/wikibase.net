@@ -95,8 +95,8 @@ namespace Wikibase.DataValues
             {
                 Amount = "+" + Amount;
             }
-            UpperBound = Amount;
-            LowerBound = Amount;
+            UpperBound = String.Empty;
+            LowerBound = String.Empty;
             Unit = null;
         }
 
@@ -123,8 +123,16 @@ namespace Wikibase.DataValues
                 this.Unit = new EntityId(unitEntity);
             }
 
-            this.UpperBound = obj.get(UpperBoundJsonName).asString();
-            this.LowerBound = obj.get(LowerBoundJsonName).asString();
+            var upperBoundJasonObject = obj.get(UpperBoundJsonName);
+            if ( upperBoundJasonObject != null )
+            {
+                this.UpperBound = upperBoundJasonObject.asString();
+            }
+            var lowerBoundJasonObject = obj.get(LowerBoundJsonName);
+            if ( lowerBoundJasonObject != null )
+            {
+                this.LowerBound = lowerBoundJasonObject.asString();
+            }
         }
 
         /// <summary>
@@ -142,12 +150,19 @@ namespace Wikibase.DataValues
         /// <returns>Encoded instance.</returns>
         internal override JsonValue Encode()
         {
-#warning Works only for Wikidata currently
-            return new JsonObject()
+            var result = new JsonObject()
                 .add(AmountJsonName, Amount)
-                .add(UnitJsonName, Unit == null ? "1" : "http://www.wikidata.org/entity/" + Unit.PrefixedId)
-                .add(UpperBoundJsonName, UpperBound)
-                .add(LowerBoundJsonName, LowerBound);
+                .add(UnitJsonName, Unit == null ? "1" : "http://www.wikidata.org/entity/" + Unit.PrefixedId);
+#warning Works only for Wikidata currently
+            if ( !String.IsNullOrEmpty(UpperBound) )
+            {
+                result.add(UpperBoundJsonName, UpperBound);
+            }
+            if ( !String.IsNullOrEmpty(LowerBound) )
+            {
+                result.add(LowerBoundJsonName, LowerBound);
+            }
+            return result;
         }
     }
 }
