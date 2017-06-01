@@ -56,7 +56,7 @@ namespace Wikibase
         /// </summary>
         protected static Dictionary<SnakType, String> _snakTypeIdentifiers = new Dictionary<SnakType, String>()
         {
-            {SnakType.None,"none"},
+            {SnakType.None,"novalue"},
             {SnakType.SomeValue,"somevalue"},
             {SnakType.Value,"value"},
         };
